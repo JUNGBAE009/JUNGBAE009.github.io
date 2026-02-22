@@ -1,0 +1,175 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>BlackStack Log</title>
+<meta name="description" content="BlackStack Log">
+
+<link rel="stylesheet" href="index.css">
+
+<!-- 마크다운 파서(marked) -->
+<script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+
+<!-- 코드 하이라이팅(highlight.js) -->
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/highlight.js/styles/github-dark.css">
+<script src="https://cdn.jsdelivr.net/npm/highlight.js/lib/common.min.js"></script>
+
+</head>
+<body>
+
+<header>
+    <h1>BlackStack Log</h1>
+
+    <!-- 보안: target=_blank 사용 시 rel="noopener" -->
+    <a href="https://github.com/JUNGBAE009" target="_blank" rel="noopener">
+        by JUNGBAE009 click("to visit GitHub")
+    </a>
+
+</header>
+
+<!-- 좌측: 탐색기 / 우측: 마크다운 뷰어 -->
+<main id="layout">
+    <aside id="explorer"></aside>
+    <section id="viewer">
+        <h2>파일을 선택하십시오.</h2>
+    </section>
+</main>
+
+<footer>
+    <p>© 2026 BlackStack Log by JUNGBAE009</p>
+</footer>
+
+<script>
+/* ============================
+    1) 파일 트리 데이터 구조
+    -직접 수정 해야함
+   ============================ */
+
+const fileTree = {
+    "test": {
+        "test.md": "test.md"
+    }
+};
+
+/* DOM 요소 캐시 */
+const explorer = document.getElementById("explorer");
+const viewer = document.getElementById("viewer");
+
+/* ============================
+   2) 마크다운 렌더 옵션
+   - gfm: GitHub 스타일 문법 지원(표, 체크박스 등)
+   - breaks: false (hr/블록 구조 깨짐 방지)
+   - highlight: 코드 하이라이트 적용
+   ============================ */
+
+marked.setOptions({
+    gfm: true,
+    breaks: false,
+    headerIds: true,
+    mangle: false,
+    highlight: function(code) {
+        return hljs.highlightAuto(code).value;
+    }
+});
+
+/* ============================
+   3) 탐색기 트리 생성
+   - folder: 펼치기/접기 가능
+   - file: 클릭 시 hash 변경(#파일경로)
+   ============================ */
+
+function createTree(tree, parent) {
+    for (const key in tree) {
+
+        /* 파일(값이 문자열 경로) */
+        if (typeof tree[key] === "string") {
+            const file = document.createElement("div");
+            file.className = "file";
+            file.textContent = key;
+
+            /* 클릭 시 URL hash만 변경 → hashchange 이벤트에서 로드 */
+            file.onclick = () => location.hash = tree[key];
+
+            parent.appendChild(file);
+            continue;
+        }
+
+        /* 폴더(값이 객체) */
+        const folder = document.createElement("div");
+        folder.className = "folder";
+        folder.textContent = key;
+
+        const children = document.createElement("div");
+        children.className = "hidden";
+
+        /* 폴더 클릭 시 펼침/접힘 */
+        folder.onclick = () => {
+            children.classList.toggle("hidden");
+        };
+
+        parent.appendChild(folder);
+        parent.appendChild(children);
+
+        createTree(tree[key], children);
+    }
+}
+
+/* 최초 트리 렌더 */
+createTree(fileTree, explorer);
+
+/* ============================
+   4) hash 기반 파일 로딩
+   - 뒤로가기/앞으로가기: hash만 바뀌므로 자동으로 다시 렌더됩니다.
+   ============================ */
+
+function loadFromHash() {
+    const file = location.hash.replace("#", "");
+    if (!file) return;
+
+    fetch(file)
+        .then(res => res.text())
+        .then(text => {
+            viewer.innerHTML = marked.parse(text);
+            addCopyButtons();
+        })
+        .catch(() => {
+            viewer.innerHTML = "<h2>파일을 불러올 수 없습니다.</h2>";
+        });
+}
+
+window.addEventListener("hashchange", loadFromHash);
+window.addEventListener("load", loadFromHash);
+
+/* ============================
+   5) 코드 복사 버튼 추가
+   - <pre><code> 블록마다 버튼 생성
+   ============================ */
+
+function addCopyButtons() {
+    /* 이미 버튼이 있다면 중복 생성 방지 */
+    document.querySelectorAll(".copy-btn").forEach(btn => btn.remove());
+
+    document.querySelectorAll("pre code").forEach(block => {
+        const btn = document.createElement("button");
+        btn.className = "copy-btn";
+        btn.textContent = "Copy";
+
+        btn.onclick = async () => {
+            try {
+                await navigator.clipboard.writeText(block.innerText);
+                btn.textContent = "Copied!";
+                setTimeout(() => btn.textContent = "Copy", 1500);
+            } catch {
+                btn.textContent = "Fail";
+                setTimeout(() => btn.textContent = "Copy", 1500);
+            }
+        };
+
+        block.parentElement.appendChild(btn);
+    });
+}
+</script>
+
+</body>
+</html>
