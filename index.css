@@ -14,7 +14,7 @@
 
 /* 전체 배경/폰트/레이아웃 */
 body {
-    background: #000;
+    background: #121212;
     color: #fff;
     font-family: 'NeoDonggeunmo', monospace;
     line-height: 1.8;
@@ -44,15 +44,16 @@ header a {
 /* ================= 레이아웃 ================= */
 
 #layout {
-    /* 중앙 영역을 좌(탐색기) + 우(뷰어)로 배치 */
     display: flex;
     flex: 1;
+    min-height: 0; /* overflow 정상 동작용 */
 }
 
 #explorer {
     width: 260px;
     border-right: 1px solid #fff;
     padding: 1rem;
+    overflow-y: auto;
 }
 
 #viewer {
@@ -61,13 +62,14 @@ header a {
     overflow-y: auto;
 }
 
-/* ================= 탐색기? UI ================= */
+/* ================= 탐색기 UI ================= */
 
 .folder,
 .file {
     cursor: pointer;
     margin-left: 10px;
     margin-bottom: 6px;
+    user-select: none;
 }
 
 /* 폴더/파일 표시용 텍스트 아이콘 */
@@ -84,6 +86,31 @@ header a {
     display: none;
 }
 
+/* 선택된 파일 표시 */
+.file.active {
+    text-decoration: underline;
+    opacity: 0.9;
+}
+
+/* ================= 네비 버튼 ================= */
+
+#nav-buttons {
+    margin-bottom: 1rem;
+}
+
+#nav-buttons button {
+    background: #000;
+    color: #fff;
+    border: 1px solid #fff;
+    padding: 6px 12px;
+    cursor: pointer;
+    margin-right: 6px;
+}
+
+#nav-buttons button:hover {
+    opacity: 0.6;
+}
+
 /* ================= 마크다운 렌더 스타일 ================= */
 
 #viewer h1 {
@@ -96,22 +123,19 @@ header a {
     margin-top: 2rem;
 }
 
-/* 수평선(hr) */
 #viewer hr {
     border: none;
     border-top: 2px solid #fff;
     margin: 2rem 0;
 }
 
-/* 인용(blockquote) */
 #viewer blockquote {
     border-left: 4px solid #fff;
     padding-left: 1rem;
     margin: 1rem 0;
-    opacity: 0.8;
+    opacity: 0.85;
 }
 
-/* 표(table) */
 #viewer table {
     border-collapse: collapse;
     margin: 1rem 0;
@@ -123,17 +147,14 @@ header a {
     padding: 6px 12px;
 }
 
-/* 체크박스 */
 #viewer input[type="checkbox"] {
     accent-color: white;
 }
 
-/* 취소선 */
 #viewer del {
     opacity: 0.6;
 }
 
-/* 링크 */
 #viewer a {
     color: #fff;
     text-decoration: underline;
@@ -161,9 +182,15 @@ header a {
     padding: 4px 8px;
 }
 
+.copy-btn:hover {
+    opacity: 0.6;
+}
+
+/* ================= 푸터 ================= */
+
 footer {
     padding: 1rem;
     border-top: 2px solid #fff;
     font-size: 1rem;
-    opacity: 0.8;
+    opacity: 0.85;
 }
